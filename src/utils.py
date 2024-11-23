@@ -17,6 +17,14 @@ from src.exception import CustomException
 from src.logger import logging
 
 
+
+def evaluate_models(X_train, X_test, y_train, y_test, models, params):
+    try:
+        pass
+
+    except Exception as e:
+        raise CustomException(e)
+
 def save_object(file_path, obj):
     try:
         dir_path = os.path.dirname(file_path)
@@ -28,9 +36,6 @@ def save_object(file_path, obj):
 
     except Exception as e:
         raise CustomException(e)
-
-
-
 
 def load_object(file_path):
     try:
