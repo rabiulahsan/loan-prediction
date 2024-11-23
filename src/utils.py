@@ -11,8 +11,8 @@ matplotlib.use('Agg')  # Use a non-interactive backend
 import matplotlib.pyplot as plt
 
 from sklearn.metrics import r2_score
-from sklearn.model_selection import GridSearchCV, train_test_split
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.model_selection import  train_test_split
+from sklearn.metrics import accuracy_score, confusion_matrix, r2_score, mean_squared_error
 from src.exception import CustomException
 from src.logger import logging
 
@@ -81,7 +81,39 @@ def evaluate_classification_models(X_train, X_test, y_train, y_test, models):
 
 def evaluate_regression_models(X_train, X_test, y_train, y_test, models):
     try:
-        pass
+        report = {}
+        output_dir = "artifacts/reg_models"
+        os.makedirs(output_dir, exist_ok=True)
+
+        for model_name, model in models.items():
+            # Train the model
+            model.fit(X_train, y_train)
+
+            # Predict and calculate scores
+            y_train_pred = model.predict(X_train)
+            y_test_pred = model.predict(X_test)
+
+            # Calculate R² scores
+            train_model_r2_score = r2_score(y_train, y_train_pred)
+            test_model_r2_score = r2_score(y_test, y_test_pred)
+
+            # Calculate MSE scores
+            train_model_mse_score = mean_squared_error(y_train, y_train_pred)
+            test_model_mse_score = mean_squared_error(y_test, y_test_pred)
+
+            # Save the trained model to a file
+            model_file_path = os.path.join(output_dir, f"{model_name}_model.pkl")
+            save_object(file_path=model_file_path, obj=model)
+            logging.info(f"Model saved to: {model_file_path}")
+
+            # Store scores in the report
+            report[model_name] = {
+                "train_r2_score": train_model_r2_score,
+                "test_r2_score": test_model_r2_score,
+                "test_mse_score": test_model_mse_score,
+                "model_file_path": model_file_path
+            }
+        return report
 
 
     except Exception as e:

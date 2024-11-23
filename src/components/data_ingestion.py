@@ -33,5 +33,16 @@ if __name__ == '__main__':
     data,_ = data_transformation.initiate_data_transformation(raw_data_path)
 
     model_trainer = ModelTrainer()
-    print(model_trainer.initiate_model_trainer(data))
-    
+    classification_results, regression_results = model_trainer.initiate_model_trainer(data)
+
+    # Print classification results
+    print("Classification Results:")
+    print(f"Report: {classification_results[0]}")
+    print(f"Best Model: {classification_results[1]}")
+    print(f"Best Model Test Score: {classification_results[2]}")
+
+    # Print regression results
+    print("\nRegression Results:")
+    print(f"Report: {regression_results[0]}")
+    print(f"Best Model: {regression_results[1]}")
+    print(f"Best Model Test Score: {regression_results[2]}")

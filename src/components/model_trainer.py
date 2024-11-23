@@ -50,6 +50,7 @@ class ModelTrainer:
                 "XGBRegressor": XGBRegressor(random_state=42, verbosity=0)
             }
 
+            #classification best model results
             classification_model_report = evaluate_classification_models(X_train_clf, X_test_clf, y_train_clf, y_test_clf, classification_models)
             # Find the best model based on the test score (second element in the tuple)
             best_clf_model_name, (best_clf_train_score, best_clf_test_score) = max(
@@ -65,13 +66,35 @@ class ModelTrainer:
             if best_clf_model_score < 0.6:
                 raise CustomException("No best model found")
 
-            logging.info(f"Best found model on both training and testing dataset")
 
             # Return the report, best model name, and R2 score for the best model
 
 
-            evaluate_regression_models( X_train_reg, X_test_reg, y_train_reg, y_test_reg, regression_models)
-            return classification_model_report, best_clf_model_name, best_clf_model_score
+            #regression best model result
+            regression_model_report = evaluate_regression_models( X_train_reg, X_test_reg, y_train_reg, y_test_reg, regression_models)
+
+            # Find the best model based on the "test_r2_score"
+            best_reg_model_name, best_reg_model_metrics = max(
+                regression_model_report.items(),  # Items return (model_name, metrics_dict)
+                key=lambda x: x[1]["test_r2_score"]  # Access "test_r2_score" in the nested dictionary
+            )
+
+            # Extract metrics for the best model
+            best_reg_train_score = best_reg_model_metrics["train_r2_score"]
+            best_reg_test_score = best_reg_model_metrics["test_r2_score"]
+            best_reg_model_file_path = best_reg_model_metrics["model_file_path"]
+
+            # Check if the best test score is above the threshold
+            if best_reg_test_score < 0.6:
+                raise CustomException("No best regression model found")
+
+            # Return both classification and regression results
+            return (
+                (classification_model_report, best_clf_model_name, best_clf_model_score),
+                (regression_model_report, best_reg_model_name, best_reg_test_score),
+            )
+
+
 
         except Exception as e:
             raise CustomException(e)
