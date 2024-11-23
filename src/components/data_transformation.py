@@ -79,6 +79,51 @@ class DataTransformation:
         
     def initiate_data_transformation(self):
         try:
-            pass
+            logging.info("Loading training and testing datasets...")
+
+            # Load data
+            train_df = pd.read_csv(train_path)
+            test_df = pd.read_csv(test_path)
+
+            logging.info("Adding new features to datasets...")
+
+            # Add new features (Approved, Age transformations)
+            train_df = self.add_new_features(train_df)
+            test_df = self.add_new_features(test_df)
+
+            logging.info("Applying preprocessing pipeline...")
+
+            # Create preprocessing pipeline
+            preprocessor = self.data_transformer_pipeline()
+
+            # Define target column
+            target_column = "Loan Amount"
+
+            # Split features and target
+            X_train = train_df.drop(columns=[target_column], axis=1)
+            y_train = train_df[target_column]
+
+            X_test = test_df.drop(columns=[target_column], axis=1)
+            y_test = test_df[target_column]
+
+            # Apply preprocessing
+            X_train_transformed = preprocessor.fit_transform(X_train)
+            X_test_transformed = preprocessor.transform(X_test)
+
+            logging.info("Saving the preprocessor object...")
+
+            # Save the preprocessor to a pickle file
+            save_object(
+                file_path=self.data_transformation_config.preprocessor_file_path,
+                obj=preprocessor
+            )
+
+            return (
+                X_train_transformed,
+                X_test_transformed,
+                y_train,
+                y_test,
+                self.data_transformation_config.preprocessor_file_path
+            )
         except Exception as e:
             raise CustomException(e)
