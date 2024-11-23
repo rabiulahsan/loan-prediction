@@ -43,11 +43,18 @@ class DataTransformation:
 
             # Combine pipelines for preprocessing
             preprocessor = ColumnTransformer(transformers=[
-                ('num_pipeline', num_pipeline, num_cols),
-                ('cat_pipeline', cat_pipeline, cat_cols)
-            ])
+                    ('num_pipeline', num_pipeline, num_cols),
+                    ('cat_pipeline', cat_pipeline, cat_cols),
+                ], remainder = 'passthrough'
+            )
 
-            return preprocessor
+            # Build complete pipeline
+            pre_processing_pipeline = Pipeline(steps=[
+                ('preprocessor', preprocessor)  # Apply preprocessing steps
+            ])
+            logging.info("Data transformation has been completed...")
+
+            return pre_processing_pipeline
 
         except Exception as e:
             raise CustomException(e)
@@ -133,19 +140,29 @@ class DataTransformation:
             y_regression = data[target_regression_column]
             y_classification = data[target_classification_column]
 
-            # print(X.shape)
+            print(X.head(5))
 
-            # Apply preprocessing
-            X_transformed = preprocessor.fit_transform(X)
-            # print(X_transformed.shape)
-            # Convert transformed data back to DataFrame
             feature_columns = X.columns
-            X_transformed = pd.DataFrame(X_transformed, columns=feature_columns)
-            print(X_transformed.head(5))
+            X_transformed = preprocessor.fit_transform(X)
+
+            # Define numerical columns
+            num_cols = ['Income', 'Loan Amount Request', 'Current Loan', 'Credit Score', 'Property Price']
+
+            # Define categorical columns
+            cat_cols = ['Income Stability', 'Age','Co-Applicant']
+
+            # Combine the transformed data into a DataFrame
+            transformed_columns = num_cols + cat_cols  # Combine the column order
+            X_transformed_df = pd.DataFrame(X_transformed, columns=transformed_columns)
+
+            # Rearrange columns to match the original order
+            X_transformed_df = X_transformed_df[X.columns]  # Ensure same order as original
+
+            print(X_transformed_df.head(5))
 
             # Add targets back to the processed DataFrame
-            X_transformed['Loan Amount'] = y_regression.values
-            X_transformed['Approved'] = y_classification.values
+            X_transformed_df['Loan Amount'] = y_regression.values
+            X_transformed_df['Approved'] = y_classification.values
 
             print(X_transformed.shape)
 
