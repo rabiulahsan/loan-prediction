@@ -164,7 +164,7 @@ class DataTransformation:
             X_transformed_df['Loan Amount'] = y_regression.values
             X_transformed_df['Approved'] = y_classification.values
 
-            print(X_transformed.shape)
+            print(X_transformed_df.shape)
 
             logging.info("Saving preprocessor object...")
             save_object(
@@ -172,27 +172,27 @@ class DataTransformation:
                 obj=preprocessor
             )
 
-            return X_transformed, self.data_transformation_config.preprocessor_file_path
+            return X_transformed_df, self.data_transformation_config.preprocessor_file_path
         except Exception as e:
             raise CustomException(e)
 
 
 
-if __name__ =='__main__':
-    raw_data_path = 'notebook\data\loan-prediction-dataset.csv'
-    try:
-        # Initialize the DataTransformation class
-        data_transformation = DataTransformation()
+# if __name__ =='__main__':
+#     raw_data_path = 'notebook\data\loan-prediction-dataset.csv'
+#     try:
+#         # Initialize the DataTransformation class
+#         data_transformation = DataTransformation()
 
-        # Call the initiate_data_transformation method and get the results
-        processed_data, preprocessor_file_path = data_transformation.initiate_data_transformation(raw_data_path)
+#         # Call the initiate_data_transformation method and get the results
+#         processed_data, preprocessor_file_path = data_transformation.initiate_data_transformation(raw_data_path)
 
-        # Print the processed data and the path to the saved pipeline
-        # print("\nProcessed Data Head:")
-        # print(processed_data.head(4))  # Print the first few rows of the processed data
+#         # Print the processed data and the path to the saved pipeline
+#         # print("\nProcessed Data Head:")
+#         # print(processed_data.head(4))  # Print the first few rows of the processed data
 
-        # print("\nSaved Preprocessor Path:")
-        # print(preprocessor_file_path)
+#         # print("\nSaved Preprocessor Path:")
+#         # print(preprocessor_file_path)
 
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
+#     except Exception as e:
+#         print(f"An error occurred: {str(e)}")
