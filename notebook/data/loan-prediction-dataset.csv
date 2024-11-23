@@ -1,4 +1,4 @@
-Gender,Age,Income,Income Stability,Loan Amount Request,Current Loan ,Dependents,Credit Score,Co-Applicant,Property Price,Loan Amount
+Gender,Age,Income,Income Stability,Loan Amount Request,Current Loan,Dependents,Credit Score,Co-Applicant,Property Price,Loan Amount
 F,56,1933.05,Low,72809.58,241.08,3,809.44,1,119933.46,54607.18
 M,32,4952.91,Low,46837.47,495.81,1,780.4,1,54791,37469.98
 F,65,988.19,High,45593.04,171.95,1,833.15,0,72440.58,36474.43

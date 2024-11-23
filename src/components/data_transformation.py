@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import LabelEncoder, MinMaxScaler
+from sklearn.preprocessing import OrdinalEncoder, MinMaxScaler, FunctionTransformer
 from dataclasses import dataclass
 
 from src.exception import CustomException
@@ -19,27 +19,26 @@ class DataTransformation:
     def __init__(self):
         self.data_transformation_config = DataTransformationConfig()
 
+    
+
     def data_transformer_pipeline(self):
         try:
             # Define numerical columns
             num_cols = ['Income', 'Loan Amount Request', 'Current Loan', 'Credit Score', 'Property Price']
 
             # Define categorical columns
-            cat_cols = ['Income Stability', 'Age', 'Approved']
+            cat_cols = ['Income Stability', 'Age','Co-Applicant']
 
             # Numerical pipeline (filling missing values, replacing -999/? to 0, scaling)
             num_pipeline = Pipeline(steps=[
-                ('imputer', SimpleImputer(strategy='mean')),  # Replace missing with mean
-                ('replace_negatives', FunctionTransformer(
-                    lambda x: np.where(np.isin(x, [-999, '?']), 0, x), validate=False)),  # Replace -999/? with 0
+                ('imputer', SimpleImputer(strategy='mean')),  # Replace missing values with mean
                 ('scaler', MinMaxScaler())  # Scale values between 0 and 1
             ])
 
             # Categorical pipeline (filling missing values, encoding)
             cat_pipeline = Pipeline(steps=[
                 ('imputer', SimpleImputer(strategy='most_frequent')),  # Replace missing with mode
-                ('label_encoder', FunctionTransformer(
-                    lambda x: pd.get_dummies(x, drop_first=True), validate=False))  # Label encoding
+                ('ordinal_encoder', OrdinalEncoder())  # Label encoding
             ])
 
             # Combine pipelines for preprocessing
@@ -49,6 +48,7 @@ class DataTransformation:
             ])
 
             return preprocessor
+
         except Exception as e:
             raise CustomException(e)
 
@@ -58,10 +58,17 @@ class DataTransformation:
         Add new features to the dataset, including the 'Approved' column and transforming 'Age'.
         """
         try:
-            # Create 'Approved' column: 1 if 'Loan Amount' > 0, else 0
-            df['Approved'] = df['Loan Amount'].apply(lambda x: 1 if x > 0 else 0)
 
-            # Transform 'Age' column: Categorize age ranges
+            # Handle missing values in 'Age'
+            age_imputer = SimpleImputer(strategy='mean')
+            df['Age'] = age_imputer.fit_transform(df[['Age']])
+
+            # Drop unnecessary columns
+            drop_col = ['Gender', 'Dependents']
+            df.drop(columns=drop_col, inplace=True)
+
+
+            # Transform 'Age' into categories
             def age_category(age):
                 if age <= 25:
                     return "Young"
@@ -70,60 +77,105 @@ class DataTransformation:
                 else:
                     return "Senior"
 
+            def approved_loan(amount):
+                return 1 if amount > 0 else 0
+
             df['Age'] = df['Age'].apply(age_category)
 
+            # Handle 'Loan Amount' column
+            df['Loan Amount'] = df['Loan Amount'].replace(['-999', '?'], 0).astype(float)
+
+            loan_imputer = SimpleImputer(strategy='mean')
+            df['Loan Amount'] = loan_imputer.fit_transform(df[['Loan Amount']])
+
+            # Create 'Approved' column
+            df['Approved'] = df['Loan Amount'].apply(approved_loan)
+
+            # Debugging: Check the final dataframe
+            # print("Final Data After Adding Features:\n", df.head())
+
+            # Numerical columns to preprocess
+            num_cols = ['Income', 'Loan Amount Request', 'Current Loan', 'Credit Score', 'Property Price']
+
+            # Replace -999 and '?' with 0 in numerical columns
+            for col in num_cols:
+                df[col] = df[col].replace(['-999', '?'], 0).astype(float)
+
+            # print("adding feature complete sucessfully")
             return df
         except Exception as e:
             raise CustomException(e)
 
         
-    def initiate_data_transformation(self):
+    def initiate_data_transformation(self, raw_data_path):
         try:
-            logging.info("Loading training and testing datasets...")
+            logging.info("Loading dataset...")
+            data = pd.read_csv(raw_data_path)
 
-            # Load data
-            train_df = pd.read_csv(train_path)
-            test_df = pd.read_csv(test_path)
+            # Debugging: Check raw data
+            # print("Raw Data Head:\n", data.head())
 
-            logging.info("Adding new features to datasets...")
+            # Define target columns
+            target_regression_column = "Loan Amount"
+            target_classification_column = "Approved"
 
-            # Add new features (Approved, Age transformations)
-            train_df = self.add_new_features(train_df)
-            test_df = self.add_new_features(test_df)
+            logging.info("Adding new features...")
+            data = self.add_new_features(data)
 
-            logging.info("Applying preprocessing pipeline...")
+            # Debugging: Check data after adding features
+            print(data.shape)
 
             # Create preprocessing pipeline
             preprocessor = self.data_transformer_pipeline()
 
-            # Define target column
-            target_column = "Loan Amount"
+            # Split features and targets
+            X = data.drop(columns=[target_regression_column, target_classification_column], axis=1)
+            y_regression = data[target_regression_column]
+            y_classification = data[target_classification_column]
 
-            # Split features and target
-            X_train = train_df.drop(columns=[target_column], axis=1)
-            y_train = train_df[target_column]
-
-            X_test = test_df.drop(columns=[target_column], axis=1)
-            y_test = test_df[target_column]
+            # print(X.shape)
 
             # Apply preprocessing
-            X_train_transformed = preprocessor.fit_transform(X_train)
-            X_test_transformed = preprocessor.transform(X_test)
+            X_transformed = preprocessor.fit_transform(X)
+            # print(X_transformed.shape)
+            # Convert transformed data back to DataFrame
+            feature_columns = X.columns
+            X_transformed = pd.DataFrame(X_transformed, columns=feature_columns)
+            print(X_transformed.head(5))
 
-            logging.info("Saving the preprocessor object...")
+            # Add targets back to the processed DataFrame
+            X_transformed['Loan Amount'] = y_regression.values
+            X_transformed['Approved'] = y_classification.values
 
-            # Save the preprocessor to a pickle file
+            print(X_transformed.shape)
+
+            logging.info("Saving preprocessor object...")
             save_object(
                 file_path=self.data_transformation_config.preprocessor_file_path,
                 obj=preprocessor
             )
 
-            return (
-                X_train_transformed,
-                X_test_transformed,
-                y_train,
-                y_test,
-                self.data_transformation_config.preprocessor_file_path
-            )
+            return X_transformed, self.data_transformation_config.preprocessor_file_path
         except Exception as e:
             raise CustomException(e)
+
+
+
+if __name__ =='__main__':
+    raw_data_path = 'notebook\data\loan-prediction-dataset.csv'
+    try:
+        # Initialize the DataTransformation class
+        data_transformation = DataTransformation()
+
+        # Call the initiate_data_transformation method and get the results
+        processed_data, preprocessor_file_path = data_transformation.initiate_data_transformation(raw_data_path)
+
+        # Print the processed data and the path to the saved pipeline
+        # print("\nProcessed Data Head:")
+        # print(processed_data.head(4))  # Print the first few rows of the processed data
+
+        # print("\nSaved Preprocessor Path:")
+        # print(preprocessor_file_path)
+
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
