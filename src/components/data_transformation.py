@@ -52,6 +52,30 @@ class DataTransformation:
         except Exception as e:
             raise CustomException(e)
 
+
+    def add_new_features(self, df):
+        """
+        Add new features to the dataset, including the 'Approved' column and transforming 'Age'.
+        """
+        try:
+            # Create 'Approved' column: 1 if 'Loan Amount' > 0, else 0
+            df['Approved'] = df['Loan Amount'].apply(lambda x: 1 if x > 0 else 0)
+
+            # Transform 'Age' column: Categorize age ranges
+            def age_category(age):
+                if age <= 25:
+                    return "Young"
+                elif 26 <= age <= 50:
+                    return "Middle Aged"
+                else:
+                    return "Senior"
+
+            df['Age'] = df['Age'].apply(age_category)
+
+            return df
+        except Exception as e:
+            raise CustomException(e)
+
         
     def initiate_data_transformation(self):
         try:
