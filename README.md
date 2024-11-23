@@ -1,1 +1,1 @@
-## This is a loan amount predictin end to end ml model
+## This is a loan amount prediction end to end ml model
