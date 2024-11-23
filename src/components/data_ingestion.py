@@ -3,6 +3,7 @@ import pandas as pd
 from src.exception import CustomException
 from src.logger import logging
 from src.components.data_transformation import DataTransformation
+from src.components.model_trainer import ModelTrainer
 
 class DataIngestionconfig:
     raw_data_path:str = 'artifacts/data.csv'
@@ -30,4 +31,7 @@ if __name__ == '__main__':
 
     data_transformation = DataTransformation()
     data,_ = data_transformation.initiate_data_transformation(raw_data_path)
+
+    model_trainer = ModelTrainer()
+    print(model_trainer.initiate_model_trainer(data))
     

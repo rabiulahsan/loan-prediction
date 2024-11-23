@@ -130,7 +130,7 @@ class DataTransformation:
             data = self.add_new_features(data)
 
             # Debugging: Check data after adding features
-            print(data.shape)
+            # print(data.shape)
 
             # Create preprocessing pipeline
             preprocessor = self.data_transformer_pipeline()
@@ -140,7 +140,7 @@ class DataTransformation:
             y_regression = data[target_regression_column]
             y_classification = data[target_classification_column]
 
-            print(X.head(5))
+            # print(X.head(5))
 
             feature_columns = X.columns
             X_transformed = preprocessor.fit_transform(X)
@@ -164,7 +164,7 @@ class DataTransformation:
             X_transformed_df['Loan Amount'] = y_regression.values
             X_transformed_df['Approved'] = y_classification.values
 
-            print(X_transformed_df.shape)
+            # print(X_transformed_df.shape)
 
             logging.info("Saving preprocessor object...")
             save_object(
