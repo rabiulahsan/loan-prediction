@@ -24,10 +24,10 @@ class DataTransformation:
     def data_transformer_pipeline(self):
         try:
             # Define numerical columns
-            num_cols = ['Income', 'Loan Amount Request', 'Current Loan', 'Credit Score', 'Property Price']
+            num_cols = ['income', 'loan_amount_request', 'current_loan', 'credit_score', 'property_price']
 
             # Define categorical columns
-            cat_cols = ['Income Stability', 'Age','Co-Applicant']
+            cat_cols = ['income_stability', 'age','co_applicant']
 
             # Numerical pipeline (filling missing values, replacing -999/? to 0, scaling)
             num_pipeline = Pipeline(steps=[
@@ -62,47 +62,47 @@ class DataTransformation:
 
     def add_new_features(self, df):
         """
-        Add new features to the dataset, including the 'Approved' column and transforming 'Age'.
+        Add new features to the dataset, including the 'approved' column and transforming 'age'.
         """
         try:
 
-            # Handle missing values in 'Age'
+            # Handle missing values in 'age'
             age_imputer = SimpleImputer(strategy='mean')
-            df['Age'] = age_imputer.fit_transform(df[['Age']])
+            df['age'] = age_imputer.fit_transform(df[['age']])
 
             # Drop unnecessary columns
-            drop_col = ['Gender', 'Dependents']
+            drop_col = ['gender', 'dependents']
             df.drop(columns=drop_col, inplace=True)
 
 
-            # Transform 'Age' into categories
+            # Transform 'age' into categories
             def age_category(age):
                 if age <= 25:
                     return "Young"
                 elif 26 <= age <= 50:
-                    return "Middle Aged"
+                    return "Middle aged"
                 else:
                     return "Senior"
 
             def approved_loan(amount):
                 return 1 if amount > 0 else 0
 
-            df['Age'] = df['Age'].apply(age_category)
+            df['age'] = df['age'].apply(age_category)
 
-            # Handle 'Loan Amount' column
-            df['Loan Amount'] = df['Loan Amount'].replace(['-999', '?'], 0).astype(float)
+            # Handle 'loan_amount' column
+            df['loan_amount'] = df['loan_amount'].replace(['-999', '?'], 0).astype(float)
 
             loan_imputer = SimpleImputer(strategy='mean')
-            df['Loan Amount'] = loan_imputer.fit_transform(df[['Loan Amount']])
+            df['loan_amount'] = loan_imputer.fit_transform(df[['loan_amount']])
 
-            # Create 'Approved' column
-            df['Approved'] = df['Loan Amount'].apply(approved_loan)
+            # Create 'approved' column
+            df['approved'] = df['loan_amount'].apply(approved_loan)
 
             # Debugging: Check the final dataframe
             # print("Final Data After Adding Features:\n", df.head())
 
             # Numerical columns to preprocess
-            num_cols = ['Income', 'Loan Amount Request', 'Current Loan', 'Credit Score', 'Property Price']
+            num_cols = ['income', 'loan_amount_request', 'current_loan', 'credit_score', 'property_price']
 
             # Replace -999 and '?' with 0 in numerical columns
             for col in num_cols:
@@ -123,8 +123,8 @@ class DataTransformation:
             # print("Raw Data Head:\n", data.head())
 
             # Define target columns
-            target_regression_column = "Loan Amount"
-            target_classification_column = "Approved"
+            target_regression_column = "loan_amount"
+            target_classification_column = "approved"
 
             logging.info("Adding new features...")
             data = self.add_new_features(data)
@@ -146,10 +146,10 @@ class DataTransformation:
             X_transformed = preprocessor.fit_transform(X)
 
             # Define numerical columns
-            num_cols = ['Income', 'Loan Amount Request', 'Current Loan', 'Credit Score', 'Property Price']
+            num_cols = ['income', 'loan_amount_request', 'current_loan', 'credit_score', 'property_price']
 
             # Define categorical columns
-            cat_cols = ['Income Stability', 'Age','Co-Applicant']
+            cat_cols = ['income_stability', 'age','co_applicant']
 
             # Combine the transformed data into a DataFrame
             transformed_columns = num_cols + cat_cols  # Combine the column order
@@ -161,8 +161,8 @@ class DataTransformation:
             print(X_transformed_df.head(5))
 
             # Add targets back to the processed DataFrame
-            X_transformed_df['Loan Amount'] = y_regression.values
-            X_transformed_df['Approved'] = y_classification.values
+            X_transformed_df['loan_amount'] = y_regression.values
+            X_transformed_df['approved'] = y_classification.values
 
             # print(X_transformed_df.shape)
 
