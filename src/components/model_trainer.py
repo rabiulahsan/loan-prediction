@@ -24,7 +24,7 @@ class ModelTrainer:
             target_classification_column = "approved"
 
             # Split features and targets
-            X_classification = data.drop(columns=[target_classification_column], axis=1)
+            X_classification = data.drop(columns=[target_classification_column, target_regression_column], axis=1)
             X_regression = data.drop(columns=[target_regression_column], axis=1)
             y_regression = data[target_regression_column]
             y_classification = data[target_classification_column]
@@ -38,7 +38,7 @@ class ModelTrainer:
                 "DecisionTreeClassifier": DecisionTreeClassifier(random_state=42),
                 "RandomForestClassifier": RandomForestClassifier(random_state=42),
                 "GradientBoostingClassifier": GradientBoostingClassifier(random_state=42),
-                "XGBClassifier": XGBClassifier(use_label_encoder=False, eval_metric="logloss", random_state=42)
+                "XGBClassifier": XGBClassifier( eval_metric="logloss", random_state=42)
             }
 
             # Step 4: Train regression models
