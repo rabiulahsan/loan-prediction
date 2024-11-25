@@ -35,7 +35,7 @@ class CustomData:
     def __init__(  self,
         age: str,
         income_stability: str,
-        co_applicant: int,
+        co_applicant: int, # 0 / 1
         income: int,
         current_loan: int,
         credit_score: int,
@@ -77,14 +77,14 @@ if __name__ == "__main__":
     try:
         # Create a CustomData instance with sample data
         custom_data = CustomData(
-            age='Middle aged',
-            income_stability="High",
-            co_applicant=1,
-            income=20000,
-            current_loan=500,
-            credit_score=500,
-            loan_amount_request=2000,
-            property_price=500000
+            age = "Senior",
+            income_stability = "Low",
+            co_applicant = 1,
+            income = 10000.05,
+            current_loan = 241.08,
+            credit_score = 809.44,
+            loan_amount_request = 95800,
+            property_price = 119933
         )
 
         # Convert the custom data to a DataFrame
