@@ -24,10 +24,10 @@ class DataTransformation:
     def data_transformer_pipeline(self):
         try:
             # Define numerical columns
-            num_cols = ['income', 'loan_amount_request', 'current_loan', 'credit_score', 'property_price']
+            num_cols = ['income', 'current_loan',  'credit_score', 'loan_amount_request',  'property_price']
 
             # Define categorical columns
-            cat_cols = ['income_stability', 'age','co_applicant']
+            cat_cols = ['age', 'income_stability', 'co_applicant']
 
             # Numerical pipeline (filling missing values, replacing -999/? to 0, scaling)
             num_pipeline = Pipeline(steps=[
@@ -38,13 +38,13 @@ class DataTransformation:
             # Categorical pipeline (filling missing values, encoding)
             cat_pipeline = Pipeline(steps=[
                 ('imputer', SimpleImputer(strategy='most_frequent')),  # Replace missing with mode
-                ('ordinal_encoder', OrdinalEncoder())  # Label encoding
+                ('ordinal_encoder', OrdinalEncoder())  # Label encoding # Handle unknown categories
             ])
 
             # Combine pipelines for preprocessing
             preprocessor = ColumnTransformer(transformers=[
-                    ('num_pipeline', num_pipeline, num_cols),
                     ('cat_pipeline', cat_pipeline, cat_cols),
+                    ('num_pipeline', num_pipeline, num_cols),
                 ], remainder = 'passthrough'
             )
 
@@ -142,28 +142,23 @@ class DataTransformation:
 
             # print(X.head(5))
 
-            feature_columns = X.columns
             X_transformed = preprocessor.fit_transform(X)
+            # print(X_transformed)
 
-            # Define numerical columns
-            num_cols = ['income', 'loan_amount_request', 'current_loan', 'credit_score', 'property_price']
-
-            # Define categorical columns
-            cat_cols = ['income_stability', 'age','co_applicant']
 
             # Combine the transformed data into a DataFrame
-            transformed_columns = num_cols + cat_cols  # Combine the column order
-            X_transformed_df = pd.DataFrame(X_transformed, columns=transformed_columns)
+            feature_columns = X.columns
+            X_transformed_df = pd.DataFrame(X_transformed, columns=feature_columns)
 
             # Rearrange columns to match the original order
             X_transformed_df = X_transformed_df[X.columns]  # Ensure same order as original
 
-            print(X_transformed_df.head(5))
 
             # Add targets back to the processed DataFrame
             X_transformed_df['loan_amount'] = y_regression.values
             X_transformed_df['approved'] = y_classification.values
 
+            print(X_transformed_df.head(5))
             # print(X_transformed_df.shape)
 
             logging.info("Saving preprocessor object...")
@@ -178,21 +173,21 @@ class DataTransformation:
 
 
 
-# if __name__ =='__main__':
-#     raw_data_path = 'notebook\data\loan-prediction-dataset.csv'
-#     try:
-#         # Initialize the DataTransformation class
-#         data_transformation = DataTransformation()
+if __name__ =='__main__':
+    raw_data_path = 'notebook\data\loan-prediction-dataset.csv'
+    try:
+        # Initialize the DataTransformation class
+        data_transformation = DataTransformation()
 
-#         # Call the initiate_data_transformation method and get the results
-#         processed_data, preprocessor_file_path = data_transformation.initiate_data_transformation(raw_data_path)
+        # Call the initiate_data_transformation method and get the results
+        processed_data, preprocessor_file_path = data_transformation.initiate_data_transformation(raw_data_path)
 
-#         # Print the processed data and the path to the saved pipeline
-#         # print("\nProcessed Data Head:")
-#         # print(processed_data.head(4))  # Print the first few rows of the processed data
+        # Print the processed data and the path to the saved pipeline
+        # print("\nProcessed Data Head:")
+        # print(processed_data.head(4))  # Print the first few rows of the processed data
 
-#         # print("\nSaved Preprocessor Path:")
-#         # print(preprocessor_file_path)
+        # print("\nSaved Preprocessor Path:")
+        # print(preprocessor_file_path)
 
-#     except Exception as e:
-#         print(f"An error occurred: {str(e)}")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")

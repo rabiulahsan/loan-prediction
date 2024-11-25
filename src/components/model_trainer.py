@@ -20,11 +20,11 @@ class ModelTrainer:
     def initiate_model_trainer(self, data):
         try:
             # Define target columns
-            target_regression_column = "Loan Amount"
-            target_classification_column = "Approved"
+            target_regression_column = "loan_amount"
+            target_classification_column = "approved"
 
             # Split features and targets
-            X_classification = data.drop(columns=[target_classification_column, target_regression_column], axis=1)
+            X_classification = data.drop(columns=[target_classification_column], axis=1)
             X_regression = data.drop(columns=[target_regression_column], axis=1)
             y_regression = data[target_regression_column]
             y_classification = data[target_classification_column]

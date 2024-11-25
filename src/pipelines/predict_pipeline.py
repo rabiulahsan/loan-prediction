@@ -14,10 +14,18 @@ class PredictPipeline:
 
             model = load_object(file_path=model_path)
             preprocessor = load_object(file_path=preprocessor_path)
+            logging.info("Loading model and preprocessor file...")
+            # print(model)
 
             data_scaled = preprocessor.transform(features)
+            # print(data_scaled)
             preds = model.predict(data_scaled)
+            
+
+            logging.info("Prediction Completed...")
+
             return preds
+
         except Exception as e:
             raise CustomException(e)
 
@@ -25,25 +33,25 @@ class PredictPipeline:
 class CustomData:
     def __init__(  self,
         gender: str,
-        age: int,
-        income: int,
+        age: str,
         income_stability: str,
-        loan_amount_request: int,
+        co_applicant: int,
+        income: int,
         current_loan: int,
         dependents: int,
         credit_score: int,
-        co_applicant: int,
+        loan_amount_request: int,
         property_price: int):
 
         self.gender = gender
         self.age = age
-        self.income = income
         self.income_stability = income_stability
-        self.loan_amount_request = loan_amount_request
+        self.co_applicant = co_applicant
+        self.income = income
         self.current_loan = current_loan
         self.dependents = dependents
         self.credit_score = credit_score
-        self.co_applicant = co_applicant
+        self.loan_amount_request = loan_amount_request
         self.property_price = property_price
 
     def make_data_frame(self):
@@ -51,13 +59,13 @@ class CustomData:
             custom_data_input_dict = {
             "gender": [self.gender],
             "age": [self.age],
-            "income": [self.income],
             "income_stability": [self.income_stability],
-            "loan_amount_request": [self.loan_amount_request],
+            "co_applicant": [self.co_applicant],
+            "income": [self.income],
             "current_loan": [self.current_loan],
             "dependents": [self.dependents],
             "credit_score": [self.credit_score],
-            "co_applicant": [self.co_applicant],
+            "loan_amount_request": [self.loan_amount_request],
             "property_price": [self.property_price],
         }
 
@@ -66,3 +74,39 @@ class CustomData:
 
         except Exception as e:
             raise CustomException(e)
+
+
+# Main function for testing
+if __name__ == "__main__":
+    try:
+        # Create a CustomData instance with sample data
+        custom_data = CustomData(
+            gender="M",
+            age='Middle aged',
+            income_stability="High",
+            co_applicant=1,
+            income=20000,
+            current_loan=500,
+            dependents=2,
+            credit_score=500,
+            loan_amount_request=20000,
+            property_price=50000
+        )
+
+        # Convert the custom data to a DataFrame
+        pred_df = custom_data.make_data_frame()
+        print("Generated DataFrame:")
+        print(pred_df)
+
+        # Initialize the PredictPipeline
+        predict_pipeline = PredictPipeline()
+
+        # Make predictions
+        predictions = predict_pipeline.predict_approval(pred_df)
+
+        # Print the predictions
+        print("Predictions:")
+        print(predictions[0])
+
+    except Exception as e:
+        print(f"Error during execution: {e}")
